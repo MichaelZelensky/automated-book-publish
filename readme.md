@@ -1,7 +1,9 @@
-# Digital-First Book Publishing Playbook
+# Automated Book Publishing
 
 _If you are a human, no need to read this. Just copy-paste this file code into your LLM and ask for step-by-step instructions or explanation:
 https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1_
+
+---
 
 This playbook explains how to create an automated publishing pipeline for a book written in Markdown.
 
