@@ -1,7 +1,57 @@
-# Automated Book Publishing
+# Continuous Book Publishing
 
-_If you are a human, no need to read this. Just copy-paste this file code into your LLM and ask for step-by-step instructions or explanation:
+_If you are a human, no need to read this. Just copy-paste this file code into your LLM and ask for step-by-step instructions or explanation: 
 https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1_
+
+---
+
+This document and instructions solve two problems:
+- book writing and publishing
+- making it easy for LLMs (and, eventually, people) to read it
+
+The provided instructions are for Windows users, but they can be easily updated for any other operating system.
+
+## Why Continuous Book Publishing
+
+Writing a book becomes increasingly difficult as it grows.
+
+The problem is not only writing itself, but the growing write → read cycle.
+
+Every new chapter increases the amount of existing context that must remain:
+
+- consistent
+- connected
+- cohesive
+- non-contradictory
+
+This process becomes surprisingly similar to maintaining a large software codebase.
+
+As systems grow:
+- parts multiply
+- dependencies increase
+- consistency becomes harder
+- maintenance overhead grows
+
+Software engineering solved this problem through:
+
+- modularity
+- separation of concerns
+- automation
+- continuous delivery
+- versioning
+- build pipelines
+
+This publishing workflow applies the same principles to books.
+
+Instead of treating a book as a static document, it becomes:
+
+- modular
+- versioned
+- automated
+- continuously publishable
+- machine-readable
+
+The result is continuous book publishing.
 
 ---
 
@@ -21,7 +71,9 @@ The architecture behaves similarly to software deployment pipelines.
 
 ---
 
-# 1. Install VSCode
+## Step-by-step Instructions
+
+### Install VSCode
 
 Download:
 
@@ -37,7 +89,7 @@ Recommended extensions:
 
 ---
 
-# 2. Create Project Structure
+### Create Project Structure
 
 Create:
 
@@ -52,7 +104,7 @@ book/
 
 ---
 
-# 3. Install Pandoc
+### Install Pandoc
 
 Download:
 
@@ -75,7 +127,7 @@ Pandoc converts Markdown into:
 
 ---
 
-# 4. Install wkhtmltopdf
+### Install wkhtmltopdf
 
 Download:
 
@@ -93,7 +145,7 @@ wkhtmltopdf converts HTML into styled PDF.
 
 ---
 
-# 5. Create Cover Page
+### Create Cover Page
 
 Create:
 
@@ -136,7 +188,7 @@ Content:
 
 ---
 
-# 6. Create Book Chapters
+### Create Book Chapters
 
 Example:
 
@@ -149,9 +201,7 @@ book/chapters/003-ai-systems.md
 Example chapter:
 
 ```md
-# Introduction
-
-Digital-first companies are structured as systems.
+## Digital-first companies are structured as systems.
 
 Processes become observable, automatable, and scalable.
 ```
@@ -170,7 +220,7 @@ controls book order.
 
 ---
 
-# 7. Create CSS Styling
+### Create CSS Styling
 
 Create:
 
@@ -189,7 +239,7 @@ body {
   max-width: 900px;
   margin: 40px auto;
 
-  color: #222;
+  color: ##222;
 }
 
 .cover-page {
@@ -214,7 +264,7 @@ body {
   letter-spacing: 2px;
   text-transform: uppercase;
 
-  color: #777;
+  color: ##777;
 
   margin-bottom: 80px;
 }
@@ -230,7 +280,7 @@ body {
   font-size: 24px;
   line-height: 1.6;
 
-  color: #555;
+  color: ##555;
 
   margin-bottom: 60px;
 }
@@ -239,7 +289,7 @@ body {
   width: 120px;
   height: 2px;
 
-  background: #222;
+  background: ##222;
 
   margin: 0 auto 60px auto;
 }
@@ -251,13 +301,13 @@ body {
 }
 
 .cover-year {
-  color: #777;
+  color: ##777;
 }
 ```
 
 ---
 
-# 8. Create Build Script
+## Create Build Script
 
 Create:
 
@@ -344,7 +394,7 @@ Write-Host "Book built: $outputFile"
 
 ---
 
-# 9. Configure VSCode Build Task
+### Configure VSCode Build Task
 
 Create:
 
@@ -379,7 +429,7 @@ Content:
 
 ---
 
-# 10. Build the Book
+### Build the Book
 
 Inside VSCode:
 
@@ -396,7 +446,7 @@ book/dist/book.md
 
 ---
 
-# 11. Why Generate book.md
+## Why Generate LLM-verion
 
 The Markdown edition is useful for:
 
@@ -421,7 +471,7 @@ from the same source files.
 
 ---
 
-# 12. Recommended Workflow
+## Recommended Workflow
 
 ```text
 write chapter
@@ -433,7 +483,7 @@ write chapter
 
 ---
 
-# 13. Future Extensions
+## Future Extensions
 
 This architecture scales naturally into:
 
@@ -455,9 +505,7 @@ Possible future outputs:
 
 without changing the source structure.
 
----
-
-# 14. Core Principle
+## Core Principle
 
 Keep:
 
