@@ -1,0 +1,471 @@
+# Digital-First Book Publishing Playbook
+
+This playbook explains how to create an automated publishing pipeline for a book written in Markdown.
+
+The result:
+
+```text
+write chapters
+→ press build
+→ automatically generate:
+   - styled PDF book
+   - LLM-ready markdown edition
+```
+
+The architecture behaves similarly to software deployment pipelines.
+
+---
+
+# 1. Install VSCode
+
+Download:
+
+```text
+https://code.visualstudio.com/
+```
+
+Recommended extensions:
+
+- Markdown All in One
+- Prettier
+- GitLens
+
+---
+
+# 2. Create Project Structure
+
+Create:
+
+```text
+book/
+  chapters/
+  dist/
+  scripts/
+  styles/
+  .vscode/
+```
+
+---
+
+# 3. Install Pandoc
+
+Download:
+
+```text
+https://pandoc.org/installing.html
+```
+
+Default location:
+
+```text
+C:\Program Files\Pandoc\pandoc.exe
+```
+
+Pandoc converts Markdown into:
+- HTML
+- PDF
+- EPUB
+- DOCX
+- many other formats
+
+---
+
+# 4. Install wkhtmltopdf
+
+Download:
+
+```text
+https://wkhtmltopdf.org/downloads.html
+```
+
+Default location:
+
+```text
+C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe
+```
+
+wkhtmltopdf converts HTML into styled PDF.
+
+---
+
+# 5. Create Cover Page
+
+Create:
+
+```text
+book/chapters/000-cover.html
+```
+
+Content:
+
+```html
+<div class="cover-page">
+  <div class="cover-content">
+
+    <div class="cover-top-author">
+      Michael Zelensky
+    </div>
+
+    <h1>
+      Digital-First Business
+    </h1>
+
+    <div class="cover-subtitle">
+      How to Build an Automated Business<br>
+      That Still Feels Human
+    </div>
+
+    <div class="cover-divider"></div>
+
+    <div class="cover-author">
+      &copy; Michael Zelensky 2026
+    </div>
+
+    <div class="cover-year">
+      Edition: $date$
+    </div>
+
+  </div>
+</div>
+```
+
+---
+
+# 6. Create Book Chapters
+
+Example:
+
+```text
+book/chapters/001-introduction.md
+book/chapters/002-automation.md
+book/chapters/003-ai-systems.md
+```
+
+Example chapter:
+
+```md
+# Introduction
+
+Digital-first companies are structured as systems.
+
+Processes become observable, automatable, and scalable.
+```
+
+Files are sorted alphabetically.
+
+This means:
+
+```text
+001-
+002-
+003-
+```
+
+controls book order.
+
+---
+
+# 7. Create CSS Styling
+
+Create:
+
+```text
+book/styles/book.css
+```
+
+Example:
+
+```css
+body {
+  font-family: Inter, Arial, sans-serif;
+  line-height: 1.7;
+  font-size: 15px;
+
+  max-width: 900px;
+  margin: 40px auto;
+
+  color: #222;
+}
+
+.cover-page {
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.cover-content {
+  max-width: 800px;
+}
+
+.cover-top-author {
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+
+  color: #777;
+
+  margin-bottom: 80px;
+}
+
+.cover-page h1 {
+  font-size: 64px;
+  line-height: 1.05;
+
+  margin-bottom: 40px;
+}
+
+.cover-subtitle {
+  font-size: 24px;
+  line-height: 1.6;
+
+  color: #555;
+
+  margin-bottom: 60px;
+}
+
+.cover-divider {
+  width: 120px;
+  height: 2px;
+
+  background: #222;
+
+  margin: 0 auto 60px auto;
+}
+
+.cover-author {
+  font-size: 24px;
+
+  margin-bottom: 12px;
+}
+
+.cover-year {
+  color: #777;
+}
+```
+
+---
+
+# 8. Create Build Script
+
+Create:
+
+```text
+book/scripts/build.ps1
+```
+
+Content:
+
+```powershell
+$ErrorActionPreference = "Stop"
+
+$bookRoot = "book"
+
+$outputDirectory = "$bookRoot/dist"
+$tempFile = "$outputDirectory/combined.html"
+$outputFile = "$outputDirectory/book.pdf"
+$markdownOutputFile = "$outputDirectory/book.md"
+
+$contentFiles = Get-ChildItem `
+  "$bookRoot/chapters/*" `
+  | Where-Object {
+      $_.Extension -in @(".md", ".html")
+    } `
+  | Sort-Object Name
+
+New-Item `
+  -ItemType Directory `
+  -Force `
+  -Path $outputDirectory `
+  | Out-Null
+
+$combinedContent = @()
+$markdownContent = @()
+
+foreach ($file in $contentFiles) {
+
+  if ($file.Extension -eq ".md") {
+
+    $html = & "C:\Program Files\Pandoc\pandoc.exe" `
+      $file.FullName `
+      -f markdown `
+      -t html
+
+    $combinedContent += $html
+
+    $markdownContent += Get-Content $file.FullName
+  }
+  else {
+
+    $combinedContent += Get-Content $file.FullName
+  }
+
+  $combinedContent += ""
+  $combinedContent += '<div style="page-break-after: always;"></div>'
+  $combinedContent += ""
+
+  $markdownContent += ""
+  $markdownContent += "---"
+  $markdownContent += ""
+}
+
+$currentDate = Get-Date
+
+$currentDateFormatted = $currentDate.ToString(
+  "yyyy MMMM dd",
+  [System.Globalization.CultureInfo]::InvariantCulture
+)
+
+$combinedContent = $combinedContent -replace '\$date\$', $currentDateFormatted
+
+$combinedContent | Set-Content $tempFile
+$markdownContent | Set-Content $markdownOutputFile
+
+& "C:\Program Files\Pandoc\pandoc.exe" `
+  $tempFile `
+  --css="$bookRoot/styles/book.css" `
+  --standalone `
+  --pdf-engine="C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe" `
+  -o $outputFile
+
+Write-Host "Book built: $outputFile"
+```
+
+---
+
+# 9. Configure VSCode Build Task
+
+Create:
+
+```text
+.vscode/tasks.json
+```
+
+Content:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Book PDF",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "./book/scripts/build.ps1"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
+```
+
+---
+
+# 10. Build the Book
+
+Inside VSCode:
+
+```text
+Ctrl + Shift + B
+```
+
+Outputs:
+
+```text
+book/dist/book.pdf
+book/dist/book.md
+```
+
+---
+
+# 11. Why Generate book.md
+
+The Markdown edition is useful for:
+
+- ChatGPT uploads
+- Claude uploads
+- Gemini uploads
+- RAG pipelines
+- embeddings
+- semantic search
+- AI agents
+- machine-readable publishing
+
+This creates:
+
+```text
+human edition
++
+machine edition
+```
+
+from the same source files.
+
+---
+
+# 12. Recommended Workflow
+
+```text
+write chapter
+→ commit to git
+→ build
+→ distribute PDF
+→ upload MD to LLMs
+```
+
+---
+
+# 13. Future Extensions
+
+This architecture scales naturally into:
+
+```text
+git push
+→ GitHub Actions
+→ automated build
+→ release generation
+→ cloud publishing
+```
+
+Possible future outputs:
+
+- EPUB
+- DOCX
+- website
+- AI knowledge API
+- searchable knowledge base
+
+without changing the source structure.
+
+---
+
+# 14. Core Principle
+
+Keep:
+
+```text
+content
+≠
+presentation
+```
+
+Meaning:
+
+- Markdown = ideas
+- CSS = styling
+- build script = automation
+
+This separation keeps the publishing pipeline scalable and maintainable.
