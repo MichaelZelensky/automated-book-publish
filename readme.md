@@ -5,7 +5,7 @@ https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?
 
 ---
 
-This playbook explains how to create an automated publishing pipeline for a book written in Markdown.
+This playbook explains how to create an automated publishing pipeline for a book written in Markdown and published in multiple formats as you update it.
 
 The result:
 
