@@ -6,7 +6,7 @@ https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?
 ---
 
 This document and instructions solve two problems:
-- book writing and publishing
+- manual book writing with automated publishing into different formats
 - making it easy for LLMs (and, eventually, people) to read it
 
 The provided instructions are for Windows users, but they can be easily updated for any other operating system.
