@@ -1,7 +1,6 @@
 # Continuous Book Publishing
 
-_If you are a human, no need to read this. Just copy-paste this file code into your LLM and ask for step-by-step instructions or explanation: 
-https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1_
+_If you are a human, no need to read this. Just copy-paste (this file code)[https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1] into your LLM and ask for step-by-step instructions or explanation_
 
 ---
 
