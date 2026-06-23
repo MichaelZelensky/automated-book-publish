@@ -324,7 +324,6 @@ $bookRoot = "book"
 $outputDirectory = "$bookRoot/dist"
 $tempFile = "$outputDirectory/combined.html"
 $outputFile = "$outputDirectory/book.pdf"
-$markdownOutputFile = "$outputDirectory/book.md"
 
 $contentFiles = Get-ChildItem `
   "$bookRoot/chapters/*" `
@@ -340,7 +339,9 @@ New-Item `
   | Out-Null
 
 $combinedContent = @()
-$markdownContent = @()
+
+$combinedContent += '<meta charset="UTF-8">'
+$combinedContent += ""
 
 foreach ($file in $contentFiles) {
 
@@ -352,39 +353,32 @@ foreach ($file in $contentFiles) {
       -t html
 
     $combinedContent += $html
-
-    $markdownContent += Get-Content $file.FullName
   }
   else {
-
     $combinedContent += Get-Content $file.FullName
   }
 
   $combinedContent += ""
   $combinedContent += '<div style="page-break-after: always;"></div>'
   $combinedContent += ""
-
-  $markdownContent += ""
-  $markdownContent += "---"
-  $markdownContent += ""
 }
 
 $currentDate = Get-Date
 
 $currentDateFormatted = $currentDate.ToString(
-  "yyyy MMMM dd",
+  "yyyy, MMMM dd",
   [System.Globalization.CultureInfo]::InvariantCulture
 )
 
 $combinedContent = $combinedContent -replace '\$date\$', $currentDateFormatted
 
-$combinedContent | Set-Content $tempFile
-$markdownContent | Set-Content $markdownOutputFile
+$combinedContent | Set-Content $tempFile -Encoding UTF8
 
 & "C:\Program Files\Pandoc\pandoc.exe" `
   $tempFile `
   --css="$bookRoot/styles/book.css" `
   --standalone `
+  --metadata charset=utf-8 `
   --pdf-engine="C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe" `
   -o $outputFile
 
