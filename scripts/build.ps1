@@ -4,14 +4,15 @@ BOOK GENERATION SCRIPT
 Purpose:
 - Builds a single HTML book from ordered chapter files
 - Supports Markdown + HTML chapters
-- Extracts H1/H2 headings from Markdown
-- Builds a NESTED Table of Contents (hierarchical)
+- Extracts Markdown headings
+- Builds nested Table of Contents
 - Injects anchors into headings for correct linking
-- Supports %TOC% placeholder (e.g. toc.md)
 - Outputs final PDF via wkhtmltopdf
 
 Pseudo-commands:
-- %TOC% → replaced with generated nested TOC
+- %TOC%       → H1-H2
+- %TOC:N%     → heading level N only (e.g. %TOC:2%)
+- %TOC:A-B%   → heading levels A through B (e.g. %TOC:1-2%)
 
 Input:
 - book/chapters/*.md
@@ -21,9 +22,13 @@ Output:
 - book/dist/book.pdf
 #>
 
+param(
+  [switch]$ContentsOnly
+)
+
 $ErrorActionPreference = "Stop"
 
-$bookRoot = "book"
+$bookRoot = "."
 
 $outputDirectory = "$bookRoot/dist"
 $tempFile = "$outputDirectory/combined.html"
@@ -62,7 +67,7 @@ $extractMarkdownHeadings = {
 
   foreach ($line in $lines) {
 
-    if ($line -match '^(#{1,2})\s+(.+)$') {
+    if ($line -match '^(#{1,4})\s+(.+)$') {
 
       $level = $matches[1].Length
       $text = $matches[2].Trim()
@@ -90,16 +95,24 @@ $extractMarkdownHeadings = {
 # -------------------------
 
 $buildTOC = {
-  param ([array]$headings)
+  param (
+    [array]$headings,
+    [int]$minLevel = 1,
+    [int]$maxLevel = 4
+  )
+
+  $filtered = $headings | Where-Object {
+    $_.Level -ge $minLevel -and $_.Level -le $maxLevel
+  }
 
   $toc = @()
   $toc += '<section class="book-contents">'
   $toc += '<h1>Contents</h1>'
   $toc += '<ul>'
 
-  $currentLevel = 1
+  $currentLevel = $minLevel
 
-  foreach ($h in $headings) {
+  foreach ($h in $filtered) {
 
     while ($h.Level -gt $currentLevel) {
       $toc += '<ul>'
@@ -114,7 +127,7 @@ $buildTOC = {
     $toc += "  <li><a href=""#$($h.Anchor)"">$($h.Text)</a></li>"
   }
 
-  while ($currentLevel -gt 1) {
+  while ($currentLevel -gt $minLevel) {
     $toc += '</ul>'
     $currentLevel--
   }
@@ -165,9 +178,28 @@ foreach ($chapter in $chapterData) {
   $raw = $chapter.Content
 
   # Inject TOC
-  if ($raw -match '%TOC%') {
-    $raw = $raw -replace '%TOC%', $tocHtml
-  }
+  $raw = [regex]::Replace(
+    $raw,
+    '%TOC(?::(\d)(?:-(\d))?)?%',
+    {
+      param($match)
+
+      if (-not $match.Groups[1].Success) {
+        return & $buildTOC $allHeadings 1 4
+      }
+
+      $minLevel = [int]$match.Groups[1].Value
+
+      if ($match.Groups[2].Success) {
+        $maxLevel = [int]$match.Groups[2].Value
+      }
+      else {
+        $maxLevel = $minLevel
+      }
+
+      return & $buildTOC $allHeadings $minLevel $maxLevel
+    }
+  )
 
   # Markdown processing
   if ($chapter.File.Extension -eq ".md") {
@@ -178,7 +210,7 @@ foreach ($chapter in $chapterData) {
 
       $raw = [regex]::Replace(
         $raw,
-        "^(#{1,2})\s+$escaped\s*$",
+        "^(#{1,4})\s+$escaped\s*$",
         "`$1 $($h.Text) {#$($h.Anchor)}",
         [System.Text.RegularExpressions.RegexOptions]::Multiline
       )
