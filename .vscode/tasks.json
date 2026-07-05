@@ -16,6 +16,19 @@
         "isDefault": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Generate TOC (Markdown)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "./scripts/build.ps1",
+        "-TocOnly"
+      ],
+      "problemMatcher": []
     }
   ]
 }

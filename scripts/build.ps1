@@ -4,26 +4,32 @@ BOOK GENERATION SCRIPT
 Purpose:
 - Builds a single HTML book from ordered chapter files
 - Supports Markdown + HTML chapters
-- Extracts Markdown headings
+- Extracts Markdown headings (H1-H4)
 - Builds nested Table of Contents
 - Injects anchors into headings for correct linking
-- Outputs final PDF via wkhtmltopdf
+- Generates a styled PDF or a Markdown table of contents
 
 Pseudo-commands:
 - %TOC%       → H1-H2
 - %TOC:N%     → heading level N only (e.g. %TOC:2%)
-- %TOC:A-B%   → heading levels A through B (e.g. %TOC:1-2%)
+- %TOC:A-B%   → heading levels A through B (e.g. %TOC:1-3%)
+
+Options:
+- -TocOnly    → generate dist/toc.md and exit
 
 Input:
-- book/chapters/*.md
-- book/chapters/*.html
+- chapters/*.md
+- chapters/*.html
 
 Output:
-- book/dist/book.pdf
+- dist/book.pdf
+- dist/combined.html
+- dist/toc.md (with -TocOnly)
+
 #>
 
 param(
-  [switch]$ContentsOnly
+    [switch]$TocOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,6 +39,7 @@ $bookRoot = "."
 $outputDirectory = "$bookRoot/dist"
 $tempFile = "$outputDirectory/combined.html"
 $outputFile = "$outputDirectory/book.pdf"
+$tocMarkdownFile = "$outputDirectory/toc.md"
 
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
@@ -138,6 +145,31 @@ $buildTOC = {
   return $toc -join "`n"
 }
 
+$buildMarkdownTOC = {
+  param(
+    [array]$headings,
+    [int]$minLevel = 1,
+    [int]$maxLevel = 4
+  )
+
+  $filtered = $headings | Where-Object {
+    $_.Level -ge $minLevel -and $_.Level -le $maxLevel
+  }
+
+  $toc = @()
+  $toc += "# Contents"
+  $toc += ""
+
+  foreach ($h in $filtered) {
+
+    $indent = "  " * ($h.Level - $minLevel)
+
+    $toc += "$indent- $($h.Text)"
+  }
+
+  return $toc -join "`r`n"
+}
+
 # -------------------------
 # PHASE 1: COLLECT HEADINGS
 # -------------------------
@@ -160,6 +192,20 @@ foreach ($file in $contentFiles) {
     Anchor  = $anchor
     Content = $raw
   }
+}
+
+if ($TocOnly) {
+
+    $tocMarkdown = & $buildMarkdownTOC $allHeadings 1 4
+
+    Set-Content `
+        -Path $tocMarkdownFile `
+        -Value $tocMarkdown `
+        -Encoding UTF8
+
+    Write-Host "TOC written: $tocMarkdownFile"
+
+    return
 }
 
 # Build TOC once
