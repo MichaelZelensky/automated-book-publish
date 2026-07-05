@@ -2,8 +2,6 @@
 
 _If you are a human, no need to read this. Just copy-paste [this AI-friendly version](https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1) into your LLM and ask for step-by-step instructions or explanation_
 
----
-
 This document and instructions solve two problems:
 - manual book writing with automated publishing into different formats
 - making it easy for LLMs (and, eventually, people) to read it
@@ -18,43 +16,42 @@ The problem is not only writing itself, but the growing write → read cycle.
 
 Every new chapter increases the amount of existing context that must remain:
 
-- consistent
-- connected
-- cohesive
-- non-contradictory
+* consistent
+* connected
+* cohesive
+* non-contradictory
 
 This process becomes surprisingly similar to maintaining a large software codebase.
 
 As systems grow:
-- parts multiply
-- dependencies increase
-- consistency becomes harder
-- maintenance overhead grows
+
+* parts multiply
+* dependencies increase
+* consistency becomes harder
+* maintenance overhead grows
 
 Software engineering solved this problem through:
 
-- modularity
-- separation of concerns
-- automation
-- continuous delivery
-- versioning
-- build pipelines
+* modularity
+* separation of concerns
+* automation
+* continuous delivery
+* versioning
+* build pipelines
 
 This publishing workflow applies the same principles to books.
 
 Instead of treating a book as a static document, it becomes:
 
-- modular
-- versioned
-- automated
-- continuously publishable
-- machine-readable
+* modular
+* versioned
+* automated
+* continuously publishable
+* machine-readable
 
 The result is continuous book publishing.
 
----
-
-This playbook explains how to create an automated publishing pipeline for a book written in Markdown and published in multiple formats as you update it.
+This playbook explains how to create an automated publishing pipeline for a book written in Markdown and HTML and published as a styled PDF.
 
 The result:
 
@@ -63,12 +60,11 @@ write chapters
 → press build
 → automatically generate:
    - styled PDF book
-   - LLM-ready markdown edition
+   - navigable table of contents
+   - heading anchors
 ```
 
 The architecture behaves similarly to software deployment pipelines.
-
----
 
 ## Step-by-step Instructions
 
@@ -86,8 +82,6 @@ Recommended extensions:
 - Prettier
 - GitLens
 
----
-
 ### Create Project Structure
 
 Create:
@@ -100,8 +94,6 @@ book/
   styles/
   .vscode/
 ```
-
----
 
 ### Install Pandoc
 
@@ -124,8 +116,6 @@ Pandoc converts Markdown into:
 - DOCX
 - many other formats
 
----
-
 ### Install wkhtmltopdf
 
 Download:
@@ -141,8 +131,6 @@ C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe
 ```
 
 wkhtmltopdf converts HTML into styled PDF.
-
----
 
 ### Create Cover Page
 
@@ -185,8 +173,6 @@ Content:
 </div>
 ```
 
----
-
 ### Create Book Chapters
 
 Example:
@@ -216,8 +202,6 @@ This means:
 ```
 
 controls book order.
-
----
 
 ### Create CSS Styling
 
@@ -304,90 +288,8 @@ body {
 }
 ```
 
----
 
-## Create Build Script
-
-Create:
-
-```text
-book/scripts/build.ps1
-```
-
-Content:
-
-```powershell
-$ErrorActionPreference = "Stop"
-
-$bookRoot = "book"
-
-$outputDirectory = "$bookRoot/dist"
-$tempFile = "$outputDirectory/combined.html"
-$outputFile = "$outputDirectory/book.pdf"
-
-$contentFiles = Get-ChildItem `
-  "$bookRoot/chapters/*" `
-  | Where-Object {
-      $_.Extension -in @(".md", ".html")
-    } `
-  | Sort-Object Name
-
-New-Item `
-  -ItemType Directory `
-  -Force `
-  -Path $outputDirectory `
-  | Out-Null
-
-$combinedContent = @()
-
-$combinedContent += '<meta charset="UTF-8">'
-$combinedContent += ""
-
-foreach ($file in $contentFiles) {
-
-  if ($file.Extension -eq ".md") {
-
-    $html = & "C:\Program Files\Pandoc\pandoc.exe" `
-      $file.FullName `
-      -f markdown `
-      -t html
-
-    $combinedContent += $html
-  }
-  else {
-    $combinedContent += Get-Content $file.FullName
-  }
-
-  $combinedContent += ""
-  $combinedContent += '<div style="page-break-after: always;"></div>'
-  $combinedContent += ""
-}
-
-$currentDate = Get-Date
-
-$currentDateFormatted = $currentDate.ToString(
-  "yyyy, MMMM dd",
-  [System.Globalization.CultureInfo]::InvariantCulture
-)
-
-$combinedContent = $combinedContent -replace '\$date\$', $currentDateFormatted
-
-$combinedContent | Set-Content $tempFile -Encoding UTF8
-
-& "C:\Program Files\Pandoc\pandoc.exe" `
-  $tempFile `
-  --css="$bookRoot/styles/book.css" `
-  --standalone `
-  --metadata charset=utf-8 `
-  --pdf-engine="C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe" `
-  -o $outputFile
-
-Write-Host "Book built: $outputFile"
-```
-
----
-
-### Configure VSCode Build Task
+### Configure VSCode Build Task (optional)
 
 Create:
 
@@ -420,8 +322,6 @@ Content:
 }
 ```
 
----
-
 ### Build the Book
 
 Inside VSCode:
@@ -437,7 +337,27 @@ book/dist/book.pdf
 book/dist/book.md
 ```
 
----
+## Table of Contents
+
+The build script can automatically generate a nested table of contents from Markdown headings.
+
+Insert one of the following pseudo-commands into any Markdown chapter:
+
+```text
+%TOC%       // H1-H2
+%TOC:1%     // H1 only
+%TOC:2%     // H2 only
+%TOC:3%     // H3 only
+%TOC:4%     // H4 only
+%TOC:1-3%   // H1-H3
+%TOC:2-4%   // H2-H4
+%TOC:1-4%   // H1-H4
+```
+
+During the build, these placeholders are replaced with a nested HTML table of contents.
+
+Heading anchors are generated automatically for Markdown headings (H1-H4), allowing every TOC entry to link directly to the corresponding section without any manual anchor management.
+
 
 ## Why Generate LLM-verion
 
@@ -462,8 +382,6 @@ machine edition
 
 from the same source files.
 
----
-
 ## Recommended Workflow
 
 ```text
@@ -473,8 +391,6 @@ write chapter
 → distribute PDF
 → upload MD to LLMs
 ```
-
----
 
 ## Future Extensions
 
