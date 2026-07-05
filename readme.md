@@ -1,347 +1,102 @@
 # Continuous Book Publishing
 
-_If you are a human, no need to read this. Just copy-paste [this AI-friendly version](https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1) into your LLM and ask for step-by-step instructions or explanation_
+*If you are a human, no need to read this. Just copy-paste the [AI-friendly version](https://github.com/MichaelZelensky/automated-book-publish/blob/master/readme.md?plain=1) into your favorite LLM and ask for step-by-step instructions or explanations.*
 
-This document and instructions solve two problems:
-- manual book writing with automated publishing into different formats
-- making it easy for LLMs (and, eventually, people) to read it
+---
 
-The provided instructions are for Windows users, but they can be easily updated for any other operating system.
+Continuous Book Publishing applies software engineering principles to writing and publishing books.
 
-## Why Continuous Book Publishing
+Instead of maintaining a single large document, a book is organized as a collection of independent chapters that are automatically assembled into a publishable document.
 
-Writing a book becomes increasingly difficult as it grows.
+This repository provides:
 
-The problem is not only writing itself, but the growing write → read cycle.
+* a build pipeline for books written in Markdown and HTML
+* automatic PDF generation
+* automatic table of contents generation
+* automatic heading anchors
+* CSS-based styling
+* a ready-to-use VS Code build configuration
 
-Every new chapter increases the amount of existing context that must remain:
+The result is a book that is modular, version-controlled, automated, and easy to maintain.
 
-* consistent
-* connected
-* cohesive
-* non-contradictory
 
-This process becomes surprisingly similar to maintaining a large software codebase.
+# Requirements
 
-As systems grow:
+Install the following software:
 
-* parts multiply
-* dependencies increase
-* consistency becomes harder
-* maintenance overhead grows
+* VS Code
+* Pandoc
+* wkhtmltopdf
 
-Software engineering solved this problem through:
-
-* modularity
-* separation of concerns
-* automation
-* continuous delivery
-* versioning
-* build pipelines
-
-This publishing workflow applies the same principles to books.
-
-Instead of treating a book as a static document, it becomes:
-
-* modular
-* versioned
-* automated
-* continuously publishable
-* machine-readable
-
-The result is continuous book publishing.
-
-This playbook explains how to create an automated publishing pipeline for a book written in Markdown and HTML and published as a styled PDF.
-
-The result:
-
-```text
-write chapters
-→ press build
-→ automatically generate:
-   - styled PDF book
-   - navigable table of contents
-   - heading anchors
-```
-
-The architecture behaves similarly to software deployment pipelines.
-
-## Step-by-step Instructions
-
-### Install VSCode
-
-Download:
-
-```text
-https://code.visualstudio.com/
-```
-
-Recommended extensions:
-
-- Markdown All in One
-- Prettier
-- GitLens
-
-### Create Project Structure
-
-Create:
-
-```text
-book/
-  chapters/
-  dist/
-  scripts/
-  styles/
-  .vscode/
-```
-
-### Install Pandoc
-
-Download:
-
-```text
-https://pandoc.org/installing.html
-```
-
-Default location:
+The provided scripts assume the default Windows installation paths:
 
 ```text
 C:\Program Files\Pandoc\pandoc.exe
-```
 
-Pandoc converts Markdown into:
-- HTML
-- PDF
-- EPUB
-- DOCX
-- many other formats
-
-### Install wkhtmltopdf
-
-Download:
-
-```text
-https://wkhtmltopdf.org/downloads.html
-```
-
-Default location:
-
-```text
 C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe
 ```
 
-wkhtmltopdf converts HTML into styled PDF.
 
-### Create Cover Page
-
-Create:
+# Repository Structure
 
 ```text
-book/chapters/000-cover.html
+chapters/
+dist/
+scripts/
+styles/
+.vscode/
 ```
 
-Content:
+Included in the repository:
 
-```html
-<div class="cover-page">
-  <div class="cover-content">
+```text
+chapters/
+    sample chapters
 
-    <div class="cover-top-author">
-      Michael Zelensky
-    </div>
+scripts/
+    build.ps1
 
-    <h1>
-      Digital-First Business
-    </h1>
+styles/
+    sample stylesheet
 
-    <div class="cover-subtitle">
-      How to Build an Automated Business<br>
-      That Still Feels Human
-    </div>
-
-    <div class="cover-divider"></div>
-
-    <div class="cover-author">
-      &copy; Michael Zelensky 2026
-    </div>
-
-    <div class="cover-year">
-      Edition: $date$
-    </div>
-
-  </div>
-</div>
+.vscode/
+    VS Code build tasks
 ```
 
-### Create Book Chapters
+The sample chapters can be replaced with your own book.
+
+
+# Writing a Book
+
+Each chapter is stored as a separate file inside:
+
+```text
+chapters/
+```
+
+Supported formats:
+
+* Markdown (`.md`)
+* HTML (`.html`)
+
+Files are assembled alphabetically, so filenames determine the book order.
 
 Example:
 
 ```text
-book/chapters/001-introduction.md
-book/chapters/002-automation.md
-book/chapters/003-ai-systems.md
-```
-
-Example chapter:
-
-```md
-## Digital-first companies are structured as systems.
-
-Processes become observable, automatable, and scalable.
-```
-
-Files are sorted alphabetically.
-
-This means:
-
-```text
-001-
-002-
-003-
-```
-
-controls book order.
-
-### Create CSS Styling
-
-Create:
-
-```text
-book/styles/book.css
-```
-
-Example:
-
-```css
-body {
-  font-family: Inter, Arial, sans-serif;
-  line-height: 1.7;
-  font-size: 15px;
-
-  max-width: 900px;
-  margin: 40px auto;
-
-  color: ##222;
-}
-
-.cover-page {
-  height: 100vh;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  text-align: center;
-
-  padding: 40px;
-  box-sizing: border-box;
-}
-
-.cover-content {
-  max-width: 800px;
-}
-
-.cover-top-author {
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-
-  color: ##777;
-
-  margin-bottom: 80px;
-}
-
-.cover-page h1 {
-  font-size: 64px;
-  line-height: 1.05;
-
-  margin-bottom: 40px;
-}
-
-.cover-subtitle {
-  font-size: 24px;
-  line-height: 1.6;
-
-  color: ##555;
-
-  margin-bottom: 60px;
-}
-
-.cover-divider {
-  width: 120px;
-  height: 2px;
-
-  background: ##222;
-
-  margin: 0 auto 60px auto;
-}
-
-.cover-author {
-  font-size: 24px;
-
-  margin-bottom: 12px;
-}
-
-.cover-year {
-  color: ##777;
-}
+000-cover.html
+001-contents.md
+002-introduction.md
+003-architecture.md
+004-conclusion.md
 ```
 
 
-### Configure VSCode Build Task (optional)
-
-Create:
-
-```text
-.vscode/tasks.json
-```
-
-Content:
-
-```json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Build Book PDF",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "./book/scripts/build.ps1"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    }
-  ]
-}
-```
-
-### Build the Book
-
-Inside VSCode:
-
-```text
-Ctrl + Shift + B
-```
-
-Outputs:
-
-```text
-book/dist/book.pdf
-book/dist/book.md
-```
-
-## Table of Contents
+# Table of Contents
 
 The build script can automatically generate a nested table of contents from Markdown headings.
 
-Insert one of the following pseudo-commands into any Markdown chapter:
+Insert one of the following pseudo-commands into a Markdown chapter:
 
 ```text
 %TOC%       // H1-H2
@@ -354,80 +109,133 @@ Insert one of the following pseudo-commands into any Markdown chapter:
 %TOC:1-4%   // H1-H4
 ```
 
-During the build, these placeholders are replaced with a nested HTML table of contents.
+During the build, the placeholder is replaced with a nested HTML table of contents.
 
-Heading anchors are generated automatically for Markdown headings (H1-H4), allowing every TOC entry to link directly to the corresponding section without any manual anchor management.
+Heading anchors are generated automatically for Markdown headings (H1-H4), so every TOC entry links directly to its section.
 
 
-## Why Generate LLM-verion
+# Styling
 
-The Markdown edition is useful for:
-
-- ChatGPT uploads
-- Claude uploads
-- Gemini uploads
-- RAG pipelines
-- embeddings
-- semantic search
-- AI agents
-- machine-readable publishing
-
-This creates:
+Book styling is controlled by:
 
 ```text
-human edition
-+
-machine edition
+styles/book.css
 ```
 
-from the same source files.
+Modify this stylesheet to customize typography, spacing, page layout, cover page, and other presentation details.
 
-## Recommended Workflow
+The book content remains separate from its presentation.
+
+
+# Building the Book
+
+Open the project in VS Code and press:
 
 ```text
-write chapter
-→ commit to git
-→ build
-→ distribute PDF
-→ upload MD to LLMs
+Ctrl + Shift + B
 ```
 
-## Future Extensions
+or run:
 
-This architecture scales naturally into:
+```powershell
+.\scripts\build.ps1
+```
+
+The build process:
+
+* combines all chapters
+* converts Markdown to HTML
+* generates heading anchors
+* generates table(s) of contents
+* applies CSS styling
+* produces a PDF
+
+Generated files:
 
 ```text
-git push
-→ GitHub Actions
-→ automated build
-→ release generation
-→ cloud publishing
+dist/
+    book.pdf
+    combined.html
 ```
 
-Possible future outputs:
 
-- EPUB
-- DOCX
-- website
-- AI knowledge API
-- searchable knowledge base
+# Generating a Markdown Table of Contents
 
-without changing the source structure.
+To generate a standalone Markdown outline of the book:
 
-## Core Principle
+```powershell
+.\scripts\build.ps1 -TocOnly
+```
 
-Keep:
+or execute the **Generate TOC (Markdown)** VS Code task.
+
+This produces:
 
 ```text
-content
-≠
-presentation
+dist/
+    toc.md
 ```
 
-Meaning:
+Example:
 
-- Markdown = ideas
-- CSS = styling
-- build script = automation
+```md
+# Contents
 
-This separation keeps the publishing pipeline scalable and maintainable.
+- Introduction
+- Architecture
+  - System Design
+  - Integrations
+- Conclusion
+```
+
+This file is useful for:
+
+* LLM prompts
+* planning
+* documentation
+* reviewing the structure of a book
+
+
+# Recommended Workflow
+
+```text
+Write chapters
+        ↓
+Commit to Git
+        ↓
+Build the book
+        ↓
+Review the PDF
+        ↓
+Repeat
+```
+
+
+# Future Extensions
+
+The repository is designed to support additional outputs without changing the source chapters, for example:
+
+* EPUB
+* DOCX
+* website
+* GitHub Pages
+* GitHub Actions
+* searchable knowledge base
+* AI knowledge API
+
+
+# Core Principle
+
+Split content into small, editable chunks.
+
+```text
+Independent chapters
+        ↓
+Automated build
+        ↓
+Publishable book
+```
+
+Each chapter is maintained independently while the build pipeline assembles them into a complete, consistently formatted book.
+
+This approach makes books easier to write, review, version, automate, and publish.
